@@ -1,56 +1,60 @@
 # Shared Task Notes
 
-## Current Status: Core Implementation Complete
+## Current Status: Live on GitHub
 
-The VPN Gateway IP Resolver solution is implemented and working locally.
+Repository: https://github.com/pubino/pugwips
 
-## What's Done
-- Python DNS resolver script (`resolve_gateways.py`) - tested, resolves 61/83 gateways
-- GitHub Actions workflow for scheduled updates (every 6 hours)
-- Azure Function for on-demand HTTP API
-- Bicep/Terraform infrastructure templates
-- Multiple output formats (JSON, IP list, Azure IP Group, Bicep, Terraform)
-- Unit tests (not run due to local pip issues - will run in CI)
-- Documentation in README.md
+The VPN Gateway IP Resolver is now live with automated updates every 6 hours via GitHub Actions.
 
-## Next Steps (for next iteration)
+## What's Working
+- GitHub Actions workflows: both Test and Resolve workflows passing
+- Scheduled IP resolution every 6 hours (commits directly to `main`)
+- Tests run in CI with pytest
+- Output files in `output/` directory are kept up-to-date automatically
 
-### 1. Push to GitHub and verify CI
-```bash
-git init
-git add .
-git commit -m "Initial VPN gateway IP resolver implementation"
-gh repo create pugwips --public --source=. --push
+## Available Outputs (always current)
+- `output/resolved_gateways.json` - Full JSON with metadata
+- `output/ip_list.txt` - Plain IP list (one per line)
+- `output/azure_ip_group.json` - Azure IP Group format
+- `output/ip_group.bicep` - Bicep template
+- `output/ip_group.tf` - Terraform template
+
+## Next Steps (Optional Enhancements)
+
+### 1. Update Azure Function config (if deploying API)
+In `azure-function/resolve_gateway_ips/__init__.py`, change:
+```python
+DEFAULT_OWNER = "pubino"  # Already set to correct value
 ```
-Then check GitHub Actions runs successfully.
 
-### 2. Update Azure Function config
-In `azure-function/resolve_gateway_ips/__init__.py`, update:
-- `DEFAULT_OWNER` to your GitHub username
-
-### 3. (Optional) Deploy Azure Function
-If you want on-demand HTTP API:
+### 2. Deploy Azure Function (optional)
+For on-demand HTTP API access:
 ```bash
-export GITHUB_OWNER="your-username"
+cd /Users/bino/Downloads/pugwips
+export GITHUB_OWNER="pubino"
 ./infra/deploy.sh
 ```
 
-### 4. Review failed DNS resolutions
-22 hostnames didn't resolve - could be:
-- Temporary DNS issues
-- Hostnames no longer active
-- Need different DNS resolver
+### 3. Set up Codecov (optional)
+To enable coverage reporting, add a `CODECOV_TOKEN` secret to the repo.
 
-Consider using `8.8.8.8` or another public DNS if local resolution is unreliable.
+### 4. Create Azure IP Group from outputs
+Use the Bicep or Terraform templates in `output/` to create an IP Group in Azure:
+```bash
+# Using Azure CLI with Bicep
+az deployment group create \
+  --resource-group YOUR_RG \
+  --template-file output/ip_group.bicep
+```
 
-## Files Overview
+## Project Structure
 ```
 ├── gateways.txt              # Input: VPN gateway hostnames
 ├── resolve_gateways.py       # Main resolver script
-├── output/                   # Generated output files
-├── .github/workflows/        # GitHub Actions
-├── azure-function/           # Azure Function code
-├── infra/                    # Azure Bicep/deploy scripts
-├── tests/                    # pytest tests
+├── output/                   # Auto-updated output files
+├── .github/workflows/        # GitHub Actions (test + resolve)
+├── azure-function/           # Azure Function code (optional)
+├── infra/                    # Bicep + deploy/teardown scripts
+├── tests/                    # pytest unit tests
 └── README.md                 # Full documentation
 ```

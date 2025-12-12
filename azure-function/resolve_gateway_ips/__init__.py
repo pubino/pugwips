@@ -17,7 +17,7 @@ import azure.functions as func
 
 # Configuration - update this to your repository
 GITHUB_RAW_URL = "https://raw.githubusercontent.com/{owner}/{repo}/main/gateways.txt"
-DEFAULT_OWNER = "YOUR_GITHUB_USERNAME"
+DEFAULT_OWNER = "pubino"
 DEFAULT_REPO = "pugwips"
 
 
