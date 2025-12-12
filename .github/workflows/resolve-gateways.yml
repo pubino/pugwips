@@ -1,0 +1,62 @@
+name: Resolve VPN Gateway IPs
+
+on:
+  # Run every 6 hours
+  schedule:
+    - cron: '0 */6 * * *'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+  # Run on push to main (for gateways.txt changes)
+  push:
+    branches:
+      - main
+    paths:
+      - 'gateways.txt'
+      - 'resolve_gateways.py'
+      - '.github/workflows/resolve-gateways.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Resolve gateway IPs
+        run: python resolve_gateways.py --input gateways.txt --output-dir output
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet output/; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push if changed
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add output/
+          git commit -m "Update resolved gateway IPs [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
+          git push
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: resolved-ips
+          path: output/
+          retention-days: 30

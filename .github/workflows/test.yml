@@ -1,0 +1,43 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.py'
+      - 'pytest.ini'
+      - 'requirements*.txt'
+      - '.github/workflows/test.yml'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Run tests (unit only)
+        run: pytest -v -m "not integration" --cov=. --cov-report=xml
+
+      - name: Run integration tests
+        run: pytest -v -m integration
+        continue-on-error: true
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+        continue-on-error: true
