@@ -1,5 +1,5 @@
 // Auto-generated VPN Gateway IP Group
-// Generated at: 2025-12-13T00:56:09.008187+00:00
+// Generated at: 2025-12-13T06:17:50.155157+00:00
 // Total IPs: 61
 
 param location string = resourceGroup().location
