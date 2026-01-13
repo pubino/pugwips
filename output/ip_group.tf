@@ -1,5 +1,5 @@
 # Auto-generated VPN Gateway IP Group
-# Generated at: 2026-01-12T18:20:03.819019+00:00
+# Generated at: 2026-01-13T00:58:04.694462+00:00
 # Total IPs: 61
 
 variable "resource_group_name" {
